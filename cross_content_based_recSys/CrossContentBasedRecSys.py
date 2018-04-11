@@ -41,3 +41,5 @@ class CrossContentBasedRecSys:
         df_recommendation = df_recommendation[['movieId', 'title', 'year', 'genres', 'director', 'similarity']]
 
         return df_recommendation
+
+        
