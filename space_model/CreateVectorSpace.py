@@ -8,13 +8,14 @@ from sklearn.preprocessing import normalize
 
 class SimpleSpaceVector:
 
-    def __init__(self):
+    def __init__(self, df_item = None):
         self._director_map = None
-        self._df_item = None
+        self._df_item = df_item.copy()
         # Check stop words
-        self._tfidf = TfidfVectorizer(stop_words='english')
+        self._tfidf = None
         self._tfidf_matrix_origen = None
         self._users_profile = {}
+        self._vocabulary_origen = None
 
     # Methods to get movie vector space (origen)
     def _create_director_map_(self):
@@ -25,7 +26,9 @@ class SimpleSpaceVector:
         directors = pd.DataFrame(directors_list, columns=['director'])
         directors = directors.drop_duplicates()
         directors['normalize'] = directors['director'].str.lower()
-        directors['normalize'] = directors['normalize'].str.replace(' ', '')
+        directors['normalize'] = directors['normalize'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+        directors['normalize'] = directors['normalize'].str.replace(r'[\.\-\" ]', '')
+        directors = directors.drop_duplicates(subset=['normalize'])
         directors = directors.set_index(['normalize'])
         self._director_map = directors
 
@@ -33,14 +36,27 @@ class SimpleSpaceVector:
         directors_dict = self._director_map.to_dict()
         return directors_dict['director']
 
-    def item_origen_space(self, df_movie):
-        self._df_item = df_movie.copy()
+    def _define_vocabulary(self, genres):
+        vocabulary_movie = list(self._director_map.index)
+        genres = genres.str.split(' ')
+        genres_list = list(genres.values)
+        genres_list = [g for gen in genres_list for g in gen]
+        genres = pd.DataFrame(genres_list, columns=['genre'])
+        genres = genres.drop_duplicates()
+        genres_list = list(genres['genre'].values)
+        vocabulary_movie.extend(genres_list)
+        return vocabulary_movie
+
+    def item_origen_space(self):
         self._create_director_map_()
         self._df_item['director'] = self._df_item['director'].str.lower()
-        self._df_item['director'] = self._df_item['director'].str.replace(r'[\.\- ]', '')
+        self._df_item['director'] = self._df_item['director'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+        self._df_item['director'] = self._df_item['director'].str.replace(r'[\.\-\" ]', '')
         self._df_item['director'] = self._df_item['director'].str.replace(',', ' ')
         self._df_item['genres'] = df_movie['genres'].str.replace('|', ' ')
         self._df_item['soap'] = self._df_item.apply(lambda x: x['genres'] + ' ' + x['director'], axis=1)
+        self._vocabulary_origen = self._define_vocabulary( self._df_item['genres'])
+        self._tfidf = TfidfVectorizer(vocabulary=self._vocabulary_origen)
         self._tfidf_matrix_origen = self._tfidf.fit_transform(self._df_item['soap'])
         return (self._tfidf_matrix_origen, self._tfidf.get_feature_names())
 
@@ -80,15 +96,14 @@ class SimpleSpaceVector:
 
 class OrigenTargetSpaceVector(SimpleSpaceVector):
 
-    def __init__(self, g_social):
-        super().__init__()
-        self._df_item_target = None
+    def __init__(self, g_social, df_item_origen = None, df_item_target = None):
+        super().__init__(df_item=df_item_origen)
+        self._df_item_target = df_item_target.copy()
         self._tfidf_matrix_target = None
         self._g_social = g_social
 
 
-    def _define_target_space_from_origen(self, df_book):
-        self._df_item_target = df_book.copy()
+    def define_target_space_from_origen(self):
         self._df_item_target['soap'] = self._df_item_target['common-shelves'].str.replace('|', ' ')
         self._tfidf_matrix_target = self._tfidf.transform(self._df_item_target['soap'])
         return self._tfidf_matrix_target
@@ -125,12 +140,61 @@ class OrigenTargetSpaceVector(SimpleSpaceVector):
     def build_target_space(self):
         isbn_list = self._df_item_target['ISBN'].unique()
         tfidf_list =[]
+        iteracion = 0
+        print('Iteracion ' + str(iteracion))
         for isbn in isbn_list:
             idx = self._df_item_target.index[self._df_item_target['ISBN'] == isbn].tolist()[0]
             df_book = self.define_target_space(idx)
             tfidf_book = df_book['tfidf'].as_matrix()
-            tfidf_list.append( scipy.sparse.coo_matrix(tfidf_book) )
+            tfidf_list.append( scipy.sparse.csr_matrix(tfidf_book) )
+            iteracion += 1
+            if iteracion%1000 == 0:
+                print('Iteracion ' + str(iteracion))
         self._tfidf_matrix_target = scipy.sparse.vstack(tfidf_list)
         return self._tfidf_matrix_target
+
+
+
+class TargetUserSpaceVector(SimpleSpaceVector):
+
+    def __init__(self, g_social, df_item_origen = None,  df_item_target = None):
+        super().__init__(df_item=df_item_origen)
+        self._g_social = g_social
+        self._df_item_target = df_item_target.copy()
+        self._author_map = None
+        self._vocabulary_target = None
+        self._tfidf_book = None
+        self._tfidf_book_matrix = None
+
+
+    def _create_author_map_(self):
+        authors = self._df_item_target['Book-Author']
+        authors_list = list(authors.unique())
+        df_authors = pd.DataFrame(authors_list, columns=['author'])
+        df_authors = df_authors.drop_duplicates()
+        df_authors['normalize'] = df_authors['author'].str.lower()
+        df_authors['normalize'] = df_authors['normalize'].str.normalize('NFKD').str.encode('ascii',errors='ignore').str.decode('utf-8')
+        df_authors['normalize'] = df_authors['normalize'].str.replace(r'[\.\-\" ]', '')
+        df_authors = df_authors.drop_duplicates(subset=['normalize'])
+        df_authors = df_authors.set_index(['normalize'])
+        self._author_map = df_authors.to_dict()
+
+    def _define_vocabulary_target(self, genres):
+        vocabulary_book = list(self._author_map.index)
+        vocabulary_book.extend(list(genres['genre'].values))
+        return vocabulary_book
+
+    def item_target_space(self):
+        self._create_author_map_()
+        self._df_item_target['common-shelves'] = self._df_item_target['common-shelves'].str.replace('|', ' ')
+        self._df_item_target['Book-Author'] = self._df_item_target['Book-Author'].str.lower()
+        self._df_item_target['Book-Author'] = self._df_item_target['Book-Author'].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+        self._df_item_target['Book-Author'] = self._df_item_target['Book-Author'].str.replace(r'[\.\-\" ]', '')
+        self._df_item_target['soap'] = self._df_item_target.apply(lambda row: row['Book-Author'] + ' ' + row['common-shelves'], axis=1)
+        self._tfidf_book = TfidfVectorizer(vocabulary=vocabulary_book)
+        self._tfidf_book_matrix = self._tfidf_book.fit_transform(df_bx_book['soap'])
+        return (self._tfidf_book_matrix, self._tfidf_book.get_feature_names())
+
+
 
 

@@ -15,8 +15,9 @@ class InfluenceGraph:
         df_edges = df_edges.set_index(['Node 1', 'Node 2'])
         self._color_dict = df_edges.to_dict()
         #Create graph
-        self._g_artist = nx.read_edgelist('/home/ignacio/Datasets/Graph analysis/artist_graph.edgelist', nodetype=str,
-                                    data=False, delimiter=',')
+        self._g_artist = nx.Graph()
+        self._g_artist.add_nodes_from(list(self._type_dict['type'].keys()))
+        self._g_artist.add_edges_from(list(self._color_dict['color'].keys()))
         nx.set_node_attributes(self._g_artist, name='type', values=self._type_dict['type'])
         nx.set_edge_attributes(self._g_artist, name='color', values=self._color_dict['color'])
 
