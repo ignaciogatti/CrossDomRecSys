@@ -33,7 +33,6 @@ class ContentBasedRecSys:
 
         df_recommendation = pd.DataFrame(similar_items_filtered, columns=['id', 'similarity']).head(topn)
         df_recommendation = pd.merge( df_recommendation, self._df_items_origen, how='left', right_on='movieId', left_on='id' )
-        print( df_recommendation.columns )
         df_recommendation = df_recommendation[['movieId', 'title', 'year', 'genres', 'director', 'similarity']]
 
         return df_recommendation
@@ -70,8 +69,7 @@ class CrossContentBasedRecSys(ContentBasedRecSys):
 
         df_recommendation = pd.DataFrame(similar_items_filtered, columns=['id', 'similarity']).head(topn)
         df_recommendation = pd.merge( df_recommendation, self._df_items_target, how='left', right_on='ISBN', left_on='id' )
-        print( df_recommendation.columns )
-        df_recommendation = df_recommendation[['ISBN', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'similarity']]
+        df_recommendation = df_recommendation[['ISBN', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'shelves', 'similarity']]
 
         return df_recommendation
 

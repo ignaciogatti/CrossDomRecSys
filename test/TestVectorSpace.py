@@ -18,10 +18,11 @@ create_space_vector = OrigenTargetSpaceVector(g_social=g_social.get_influence_gr
 (tfidf_matrix_origen, feature_names) = create_space_vector.item_origen_space()
 
 tfidf_matrix_target = create_space_vector.define_target_space_from_origen()
-df_book_pride = create_space_vector.define_target_space(df_bx_book.index[df_bx_book['ISBN'] == '055321215X'].tolist()[0])
+tfidf_matrix_target = create_space_vector.build_target_space()
 
-df_book_pride.to_csv('/home/ignacio/Datasets/Graph analysis/tfidf_pride.csv', index=False)
-print(df_book_pride.head())
+
+scipy.sparse.save_npz('/home/ignacio/Datasets/Graph analysis/tfidf_matrix_target.npz', tfidf_matrix_target)
+print(tfidf_matrix_target.shape)
 
 '''
 tfidf_matrix_target = create_space_vector._define_target_space_from_origen( df_bx_book )
