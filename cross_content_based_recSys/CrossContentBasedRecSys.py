@@ -54,6 +54,8 @@ class CrossContentBasedRecSys(ContentBasedRecSys):
 
     def _get_similar_items_to_user_profile(self, person_id, topn=100):
         # Computes the cosine similarity between the user profile and all item profiles
+        print(self._user_profile[person_id].shape)
+        print(self._tfidf_matrix_target.shape)
         cosine_similarities = cosine_similarity(self._user_profile[person_id], self._tfidf_matrix_target)
         # Gets the top similar items
         similar_indices = cosine_similarities.argsort().flatten()[-topn:]
@@ -67,9 +69,10 @@ class CrossContentBasedRecSys(ContentBasedRecSys):
         # Ignores items the user has already interacted
         similar_items_filtered = list(filter(lambda x: x[0] not in items_to_ignore, similar_items))
 
-        df_recommendation = pd.DataFrame(similar_items_filtered, columns=['id', 'similarity']).head(topn)
+        df_recommendation = pd.DataFrame(similar_items_filtered, columns=['id', 'similarity'])
         df_recommendation = pd.merge( df_recommendation, self._df_items_target, how='left', right_on='ISBN', left_on='id' )
         df_recommendation = df_recommendation[['ISBN', 'Book-Title', 'Book-Author', 'Year-Of-Publication', 'shelves', 'similarity']]
+        df_recommendation = df_recommendation.drop_duplicates(subset=['Book-Title', 'Book-Author'])
 
         return df_recommendation
 

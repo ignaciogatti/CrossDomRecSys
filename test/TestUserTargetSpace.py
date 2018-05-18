@@ -1,5 +1,6 @@
 import pandas as pd
 import scipy
+import numpy as np
 from space_model.CreateVectorSpace import SimpleSpaceVector, OrigenTargetSpaceVector, TargetUserSpaceVector
 from cross_content_based_recSys.CrossContentBasedRecSys import CrossContentBasedRecSys
 from influence_graph.InfluenceGraph import InfluenceGraph
@@ -19,8 +20,17 @@ create_space_vector = TargetUserSpaceVector(g_social=g_social.get_influence_grap
 
 (tfidf_matrix_target, feature_names_target) = create_space_vector.item_target_space()
 
+'''
 df_user_space = create_space_vector.build_user_profile(df_ratings=df_movie_ratings, userId=1)
-#tfidf_matrix_target = create_space_vector.build_target_space()
+user_matrix = df_user_space['tfidf'].as_matrix()
+user_matrix = user_matrix.reshape((1,-1))
+
+print(user_matrix.shape)
+'''
+users_profile = create_space_vector.build_users_profiles(df_ratings=df_movie_ratings )
+
+users_profile_matrix = np.vstack(users_profile.values())
+np.save('/home/ignacio/Datasets/Graph analysis/user_book_space', users_profile_matrix)
 
 
-print(df_user_space.head())
+print(users_profile_matrix.shape)

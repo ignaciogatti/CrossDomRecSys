@@ -231,10 +231,14 @@ class TargetUserSpaceVector(SimpleSpaceVector):
 
     def build_users_profiles(self, df_ratings):
         users_id = df_ratings['userId'].unique()
+        iteration = 0
         for user_id in users_id:
             df_user_item_space_book = self.build_user_profile(df_ratings, user_id)
             user_item_space_book_matrix = df_user_item_space_book['tfidf'].as_matrix()
-            self.build_users_profile[user_id] = user_item_space_book_matrix.reshape((1,-1))
+            self._users_profile[user_id] = user_item_space_book_matrix.reshape((1,-1))
+            if iteration%100 ==0:
+                print('Iteration: ' + str(iteration))
+            iteration += 1
 
         return self._users_profile
 
