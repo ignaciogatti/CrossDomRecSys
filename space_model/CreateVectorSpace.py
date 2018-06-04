@@ -11,7 +11,6 @@ class SimpleSpaceVector:
     def __init__(self, df_item = None):
         self._director_map = None
         self._df_item = df_item.copy()
-        # Check stop words
         self._tfidf = None
         self._tfidf_matrix_origen = None
         self._users_profile = {}

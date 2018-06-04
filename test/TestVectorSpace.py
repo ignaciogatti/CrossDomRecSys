@@ -5,10 +5,10 @@ from cross_content_based_recSys.CrossContentBasedRecSys import CrossContentBased
 from influence_graph.InfluenceGraph import InfluenceGraph
 
 
-df_ml_movies = pd.read_csv('/home/ignacio/Datasets/Graph analysis/ml-valid-movies.csv')
-df_bx_book = pd.read_csv('/home/ignacio/Datasets/Graph analysis/bx-valid-book.csv')
+df_ml_movies = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/movie_meta_valid_genres.csv')
+df_bx_book = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/book_meta_valid_shelves.csv')
 df_bx_book['common-shelves'] = df_bx_book['common-shelves'].fillna('')
-df_movie_ratings = pd.read_csv('/home/ignacio/Datasets/Graph analysis/ml-ratings.csv')
+df_movie_ratings = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/ratings_movie_intersect_ii.csv')
 
 #Define influence graph
 g_social = InfluenceGraph()
@@ -17,11 +17,13 @@ g_social = InfluenceGraph()
 create_space_vector = OrigenTargetSpaceVector(g_social=g_social.get_influence_graph(), df_item_origen=df_ml_movies, df_item_target=df_bx_book)
 (tfidf_matrix_origen, feature_names) = create_space_vector.item_origen_space()
 
+print(tfidf_matrix_origen.shape)
+
 tfidf_matrix_target = create_space_vector.define_target_space_from_origen()
 tfidf_matrix_target = create_space_vector.build_target_space()
 
 
-scipy.sparse.save_npz('/home/ignacio/Datasets/Graph analysis/tfidf_matrix_target.npz', tfidf_matrix_target)
+scipy.sparse.save_npz('/home/ignacio/Datasets/Amazon/Data cleaned/tfidf_matrix_target.npz', tfidf_matrix_target)
 print(tfidf_matrix_target.shape)
 
 '''

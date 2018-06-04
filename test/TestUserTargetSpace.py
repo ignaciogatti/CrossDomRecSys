@@ -6,10 +6,10 @@ from cross_content_based_recSys.CrossContentBasedRecSys import CrossContentBased
 from influence_graph.InfluenceGraph import InfluenceGraph
 
 
-df_ml_movies = pd.read_csv('/home/ignacio/Datasets/Graph analysis/ml-valid-movies.csv')
-df_bx_book = pd.read_csv('/home/ignacio/Datasets/Graph analysis/bx-valid-book.csv')
+df_ml_movies = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/movie_meta_valid_genres.csv')
+df_bx_book = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/book_meta_valid_shelves.csv')
 df_bx_book['common-shelves'] = df_bx_book['common-shelves'].fillna('')
-df_movie_ratings = pd.read_csv('/home/ignacio/Datasets/Graph analysis/ml-ratings.csv')
+df_movie_ratings = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/ratings_movie_intersect_ii.csv')
 
 #Define influence graph
 g_social = InfluenceGraph()
@@ -30,7 +30,7 @@ print(user_matrix.shape)
 users_profile = create_space_vector.build_users_profiles(df_ratings=df_movie_ratings )
 
 users_profile_matrix = np.vstack(users_profile.values())
-np.save('/home/ignacio/Datasets/Graph analysis/user_book_space', users_profile_matrix)
+np.save('/home/ignacio/Datasets/Amazon/Data cleaned/user_book_space', users_profile_matrix)
 
 
 print(users_profile_matrix.shape)

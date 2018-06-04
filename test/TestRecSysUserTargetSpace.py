@@ -5,16 +5,17 @@ from cross_content_based_recSys.CrossContentBasedRecSys import CrossContentBased
 from influence_graph.InfluenceGraph import InfluenceGraph
 
 
-df_ml_movies = pd.read_csv('/home/ignacio/Datasets/Graph analysis/ml-valid-movies.csv')
-df_bx_book = pd.read_csv('/home/ignacio/Datasets/Graph analysis/bx-valid-book.csv')
+df_ml_movies = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/movie_meta_valid_genres.csv')
+df_bx_book = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/book_meta_valid_shelves_rating.csv')
 df_bx_book['common-shelves'] = df_bx_book['common-shelves'].fillna('')
-df_movie_ratings = pd.read_csv('/home/ignacio/Datasets/Graph analysis/ml-ratings.csv')
-
+df_movie_ratings = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/ratings_movie_intersect_ii.csv')
+df_bu = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/movie_bu.csv')
 #Define influence graph
 g_social = InfluenceGraph()
 
 #Create vectors spaces
-create_space_vector = TargetUserSpaceVector(g_social=g_social.get_influence_graph(), df_item_origen=df_ml_movies, df_item_target=df_bx_book)
+create_space_vector = TargetUserSpaceVector(g_social=g_social.get_influence_graph(), df_item_origen=df_ml_movies,
+                                            df_item_target=df_bx_book)
 #origen_space
 (tfidf_matrix_origen, feature_names_movie) = create_space_vector.item_origen_space()
 
@@ -23,7 +24,7 @@ create_space_vector = TargetUserSpaceVector(g_social=g_social.get_influence_grap
 (tfidf_matrix_target, feature_names_book) = create_space_vector.item_target_space()
 
 #user_space
-users_profiles_matrix = np.load('/home/ignacio/Datasets/Graph analysis/user_book_space.npy')
+users_profiles_matrix = np.load('/home/ignacio/Datasets/Amazon/Data cleaned/user_book_space.npy')
 users_id = df_movie_ratings['userId'].unique()
 users_profiles = {}
 idx = 0
@@ -34,10 +35,15 @@ for user_id in users_id:
 #Define model
 cross_content_model = CrossContentBasedRecSys(
     df_items_origen=df_ml_movies, df_items_target=df_bx_book ,tfidf_matrix_origen= tfidf_matrix_origen,
-    user_profile=users_profiles, tfidf_matrix_target=tfidf_matrix_target)
+    user_profile=users_profiles, tfidf_matrix_target=tfidf_matrix_target, df_bu= df_bu, rating_matrix= df_movie_ratings)
 
 #Recommendation
-df_recomendation = cross_content_model.recommend_items(user_id=1)
-df_recomendation.to_csv('/home/ignacio/Datasets/Graph analysis/Recommendation/recommendation_user_to_target_space.csv', index='False')
+users_to_recommend =['A2EDZH51XHFA9B', 'A3UDYY6L2NH3JS', 'A2NJO6YE954DBH', 'AUM3YMZ0YRJE0', 'A17FLA8HQOFVIG',
+                     'A20EEWWSFMZ1PN','AGEIT17HENDIS','ACIBQ6BQ6AWEV','A16QODENBJVUI1','A3KF4IP2MUS8QQ']
 
-print(df_recomendation.head())
+for user in users_to_recommend:
+    df_recomendation = cross_content_model.recommend_items(user_id=user)
+    df_recomendation.to_csv(
+        '/home/ignacio/Datasets/Amazon/Data cleaned/Recommendation/recommendation_user_to_target_space_'+user+'.csv', index='False')
+
+print('Finished')
