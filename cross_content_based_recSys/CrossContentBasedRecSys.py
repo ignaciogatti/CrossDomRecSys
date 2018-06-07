@@ -65,15 +65,12 @@ class CrossContentBasedRecSys(ContentBasedRecSys):
 
     def _get_similar_items_to_user_profile(self, person_id, topn=100):
         # Computes the cosine similarity between the user profile and all item profiles
-        print(self._user_profile[person_id].shape)
-        print(self._tfidf_matrix_target.shape)
         cosine_similarities = cosine_similarity(self._user_profile[person_id], self._tfidf_matrix_target)
         # Gets the top similar items
         similar_indices = cosine_similarities.argsort().flatten()[:]
         # Sort the similar items by similarity
         similar_items = sorted([(self._df_items_target.iloc[i]['ISBN'], cosine_similarities[0, i]) for i in similar_indices], key=lambda x: -x[1])
         return similar_items
-
 
     def predict_rating(self, row, user_id):
         average_rating = self._df_items_target[self._df_items_target['ISBN'] == row['ISBN']]['average rating'].values[0]
@@ -93,4 +90,32 @@ class CrossContentBasedRecSys(ContentBasedRecSys):
 
         return df_recommendation
 
-        
+
+class CrossEmbContentBasedREcSys(CrossContentBasedRecSys):
+
+    EMBEDDING_LENGTH = 300
+
+    def __init__(self, df_items_origen=None, df_items_target=None, user_profile=None,
+                 tfidf_matrix_origen=None, tfidf_matrix_target=None,  g_artist_influence=None, df_bu=None, rating_matrix=None):
+        super().__init__(df_items_origen=df_items_origen, df_items_target=df_items_target, user_profile=user_profile,
+                         g_artist_influence= g_artist_influence, df_bu=df_bu, rating_matrix=rating_matrix)
+        self._embedding_origin_matrix = tfidf_matrix_origen[:,0:CrossEmbContentBasedREcSys.EMBEDDING_LENGTH]
+        self._tfidf_matrix_origen = tfidf_matrix_origen[:,CrossEmbContentBasedREcSys.EMBEDDING_LENGTH:]
+        self._embedding_target_matrix = tfidf_matrix_target[:, 0:CrossEmbContentBasedREcSys.EMBEDDING_LENGTH]
+        self._tfidf_matrix_target = tfidf_matrix_target[:, CrossEmbContentBasedREcSys.EMBEDDING_LENGTH:]
+
+    def _get_similar_items_to_user_profile(self, person_id, topn=100):
+        # Computes the cosine similarity between the user embedding profile and all item embedding profiles
+        user_embedding_profile = self._user_profile[person_id][:,0:CrossEmbContentBasedREcSys.EMBEDDING_LENGTH]
+        cosine_embedding_similarities = cosine_similarity(user_embedding_profile, self._embedding_target_matrix)
+        # Computes the cosine similarity between the user tfidf author profile and all item tfidf author profiles
+        user_tfidf_profile = self._user_profile[person_id][:,CrossEmbContentBasedREcSys.EMBEDDING_LENGTH:]
+        cosine_tfidf_similarities = cosine_similarity(user_tfidf_profile, self._tfidf_matrix_target)
+        # Gets the top similar items
+        cosine_similarities = 0.7 * cosine_embedding_similarities + 0.3 * cosine_tfidf_similarities
+        similar_indices = cosine_similarities.argsort().flatten()[:]
+        # Sort the similar items by similarity
+        similar_items = sorted([(self._df_items_target.iloc[i]['ISBN'], cosine_similarities[0, i]) for i in similar_indices], key=lambda x: -x[1])
+        return similar_items
+
+
