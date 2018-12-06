@@ -1,5 +1,5 @@
 from gensim.models import Word2Vec, KeyedVectors
-from gensim.parsing.preprocessing import remove_stopwords, preprocess_string, strip_multiple_whitespaces, strip_punctuation, strip_tags
+from gensim.parsing.preprocessing import strip_multiple_whitespaces, strip_punctuation, strip_tags
 import pandas as pd
 from sklearn.preprocessing import normalize
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -10,9 +10,13 @@ import scipy
 class EmbeddingVectorSpace:
 
     def __init__(self, df_item_origin=None, df_ratings = None):
+        '''
         self._word2vect_model = KeyedVectors.load_word2vec_format(
             '/home/ignacio/Datasets/Word Embeddings Pretrained Vectors/Word2Vec/GoogleNews-vectors-negative300.bin',
             binary=True)
+        '''
+        self._word2vect_model = KeyedVectors.load_word2vec_format(
+            '/home/ignacio/Datasets/Word Embeddings Pretrained Vectors/GLoVe/glove-w2v.840B.300d.txt', binary=False)
         self._word2vect_model.init_sims(replace=True)
         self._df_item_origin = df_item_origin.copy()
         self._users_profile = {}

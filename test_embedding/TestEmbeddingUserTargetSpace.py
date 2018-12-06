@@ -26,7 +26,7 @@ print(director_tfidf.shape)
 movie_space = embedding_space.origin_space()
 print(movie_space.shape)
 
-np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/User Target space/movie_space', movie_space)
+np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/User Target space/movie_space', movie_space)
 
 # Target space
 print('Target space')
@@ -40,11 +40,11 @@ print(tfidf_author.shape)
 book_space = embedding_space.target_space()
 print(book_space.shape)
 
-np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/User Target space/book_space', book_space)
+np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/User Target space/book_space', book_space)
 # User space
 print("User space")
 users_embedding_space = embedding_space.build_users_profiles()
 users_profile_matrix = np.vstack(users_embedding_space.values())
 print(users_profile_matrix.shape)
 
-np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/User Target space/user_space', users_profile_matrix)
+np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/User Target space/user_space', users_profile_matrix)

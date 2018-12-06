@@ -12,15 +12,15 @@ embedding_space = EmbeddingVectorTargetSpace(df_item_origin=df_ml_movies, df_ite
 
 movie_embedding_space = embedding_space.origin_embedding_space()
 print(movie_embedding_space.shape)
-np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/movie_embedding_space', movie_embedding_space)
+np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/movie_embedding_space', movie_embedding_space)
 
 book_embedding_space = embedding_space.target_embedding_space()
 print(book_embedding_space.shape)
-np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/book_embedding_space', book_embedding_space)
+np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/book_embedding_space', book_embedding_space)
 
 users_embedding_space = embedding_space.build_users_profiles()
 users_profile_matrix = np.vstack(users_embedding_space.values())
 print(users_profile_matrix.shape)
 
-np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/user_embedding_space', users_profile_matrix)
+np.save('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/user_embedding_space', users_profile_matrix)
 

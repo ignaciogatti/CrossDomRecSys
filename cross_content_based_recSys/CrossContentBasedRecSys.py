@@ -96,13 +96,15 @@ class CrossEmbContentBasedREcSys(CrossContentBasedRecSys):
     EMBEDDING_LENGTH = 300
 
     def __init__(self, df_items_origen=None, df_items_target=None, user_profile=None,
-                 tfidf_matrix_origen=None, tfidf_matrix_target=None,  g_artist_influence=None, df_bu=None, rating_matrix=None):
+                 tfidf_matrix_origen=None, tfidf_matrix_target=None,  g_artist_influence=None, df_bu=None, rating_matrix=None,
+                 alpha=0.7):
         super().__init__(df_items_origen=df_items_origen, df_items_target=df_items_target, user_profile=user_profile,
                          g_artist_influence= g_artist_influence, df_bu=df_bu, rating_matrix=rating_matrix)
         self._embedding_origin_matrix = tfidf_matrix_origen[:,0:CrossEmbContentBasedREcSys.EMBEDDING_LENGTH]
         self._tfidf_matrix_origen = tfidf_matrix_origen[:,CrossEmbContentBasedREcSys.EMBEDDING_LENGTH:]
         self._embedding_target_matrix = tfidf_matrix_target[:, 0:CrossEmbContentBasedREcSys.EMBEDDING_LENGTH]
         self._tfidf_matrix_target = tfidf_matrix_target[:, CrossEmbContentBasedREcSys.EMBEDDING_LENGTH:]
+        self._alpha= alpha
 
     def _get_similar_items_to_user_profile(self, person_id, topn=100):
         # Computes the cosine similarity between the user embedding profile and all item embedding profiles
@@ -112,7 +114,7 @@ class CrossEmbContentBasedREcSys(CrossContentBasedRecSys):
         user_tfidf_profile = self._user_profile[person_id][:,CrossEmbContentBasedREcSys.EMBEDDING_LENGTH:]
         cosine_tfidf_similarities = cosine_similarity(user_tfidf_profile, self._tfidf_matrix_target)
         # Gets the top similar items
-        cosine_similarities = 0.7 * cosine_embedding_similarities + 0.3 * cosine_tfidf_similarities
+        cosine_similarities = self._alpha * cosine_embedding_similarities + (1 - self._alpha) * cosine_tfidf_similarities
         similar_indices = cosine_similarities.argsort().flatten()[:]
         # Sort the similar items by similarity
         similar_items = sorted([(self._df_items_target.iloc[i]['ISBN'], cosine_similarities[0, i]) for i in similar_indices], key=lambda x: -x[1])

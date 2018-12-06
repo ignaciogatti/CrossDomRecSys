@@ -14,13 +14,13 @@ df_bu = pd.read_csv('/home/ignacio/Datasets/Amazon/Data cleaned/movie_bu.csv')
 g_social = InfluenceGraph()
 
 #origen_space
-tfidf_matrix_origen = np.load('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/Target to Origin space/movie_space.npy')
+tfidf_matrix_origen = np.load('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/Target to Origin space/movie_space.npy')
 
 #target_space
-tfidf_matrix_target = np.load('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/Target to Origin space/book_space.npy')
+tfidf_matrix_target = np.load('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/Target to Origin space/book_space.npy')
 
 #user_space
-users_profiles_matrix = np.load('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/Target to Origin space/user_space.npy')
+users_profiles_matrix = np.load('/home/ignacio/Datasets/Amazon/Data cleaned/Embedding/GLoVe/Target to Origin space/user_space.npy')
 users_id = df_movie_ratings['userId'].unique()
 users_profiles = {}
 idx = 0
@@ -40,6 +40,6 @@ users_to_recommend =['A2EDZH51XHFA9B', 'A3UDYY6L2NH3JS', 'A2NJO6YE954DBH', 'AUM3
 for user in users_to_recommend:
     df_recomendation = cross_content_model.recommend_items(user_id=user)
     df_recomendation.to_csv(
-        '/home/ignacio/Datasets/Amazon/Data cleaned/Recommendation/Embedding/recommendation_book_to_origin_space_'+user+'.csv', index='False')
+        '/home/ignacio/Datasets/Amazon/Data cleaned/Recommendation/Embedding/GLoVe/recommendation_book_to_origin_space_'+user+'.csv', index='False')
 
 print('Finished')
