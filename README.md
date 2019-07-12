@@ -9,3 +9,7 @@ In other words, the objective is to take advantage of the source domain data -th
 One of the challenges of this project was to model movies and books in the same space. In order to solve it, we decide to model using word embedding. Basically, we take the metadata of each item and map it to a word embedding. To develop, we prove different configurations of  pre-trained models (Word2Vect and GLoVe), using [GenSim library](https://radimrehurek.com/gensim/about.html).
 
 To link books and movies, we decided to generate an influence graph that connect authors. This graph was extracted from [DBpedia Ontology](https://wiki.dbpedia.org/services-resources/ontology) and modeled using [Networkx library](https://networkx.github.io/documentation/stable/index.html).
+
+## Link to data
+
+In this [link](https://mega.nz/#F!9LphVIrL!MrxHfvfdHboXxdUoLkmsVg) you can find all the data to reproduce the experiments.
